@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "Personas";
+}
+
+@*
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+*@
+
+<table id="table-personas" class="table table-sm table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>NOMBRE</th>
+            <th>DESCRIPCIÓN</th>
+            <th>ACCIÓN</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in ViewBag.Persona)
+        {
+            <tr>
+                <th>@item.Id</th>
+                <th>@item.Nombre</th>
+                <th>@item.Descripcion</th>
+                <th><button class="btn btn-sm btn-danger" onclick="delete_persona(@item.Id)">Eliminar</button></th>
+            </tr>
+        }   
+    </tbody>
+</table>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">Nuevo Registro</div>
+            <div class="col-3"><input id="nombre" type="text" class="form-control form-control-sm" placeholder="Nombre"/></div>
+            <div class="col-3"><input id="descripcion" type="text" class="form-control form-control-sm" placeholder="Descripción" /></div>
+            <div class="col-3"><button class="btn btn-sm btn-success w-100" onclick="add_persona()">Agregar</button></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#table-personas").DataTable();
+
+    function add_persona() {
+        const nombre = document.getElementById("nombre").value;
+        const descripcion = document.getElementById("descripcion").value;
+
+        if (nombre.length >= 5 && nombre.length <= 30) {
+            if (descripcion.length >= 5 && descripcion.length <= 100) {
+                swal.fire({
+                    title: "¡Procesando información!",
+                    text: 'Espere por favor...',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        swal.showLoading();
+
+                        var formData = new FormData();
+                        formData.append("nombre", nombre);
+                        formData.append("descripcion", descripcion);
+
+                        fetch('@Url.Action("Agregar", "Home")', { method: 'POST', body: formData })
+                            .then(response => response.json())
+                            .then(data => {
+                                swal.close();
+
+                                switch (data.status) {
+                                    case "ok":
+                                        swal.fire({ title: 'Aviso', text: data.message, icon: 'success', allowOutsideClick: false, willClose: () => { location.reload() } });
+                                        break;
+                                    case "error":
+                                        swal.fire({ title: 'Aviso', text: data.message, icon: 'warning', allowOutsideClick: false });
+                                        break;
+                                    case "exception":
+                                        swal.fire({ title: 'Aviso', text: data.message, icon: 'error', allowOutsideClick: false });
+                                        break;
+                                }
+                            })
+                            .catch(error => console.error(error));
+                    }
+                });
+            } else {
+                swal.fire({ title: 'Aviso', text: "La descripcion debe contener entre 5 a 100 caracteres.", icon: 'warning', allowOutsideClick: false });
+            }
+        } else {
+            swal.fire({ title: 'Aviso', text: "El nombre debe contener entre 5 a 30 caracteres.", icon: 'warning', allowOutsideClick: false });
+        }
+    }
+
+    function delete_persona(id) {
+        if(id > 0){
+            swal.fire({
+                title: "¡Procesando información!",
+                text: 'Espere por favor...',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    swal.showLoading();
+
+                    var formData = new FormData();
+                    formData.append("id", id);
+
+                    fetch('@Url.Action("Eliminar", "Home")', { method: 'POST', body: formData })
+                        .then(response => response.json())
+                        .then(data => {
+                            swal.close();
+
+                            switch (data.status) {
+                                case "ok":
+                                    swal.fire({ title: 'Aviso', text: data.message, icon: 'success', allowOutsideClick: false, willClose: () => { location.reload() } });
+                                    break;
+                                case "error":
+                                    swal.fire({ title: 'Aviso', text: data.message, icon: 'warning', allowOutsideClick: false });
+                                    break;
+                                case "exception":
+                                    swal.fire({ title: 'Aviso', text: data.message, icon: 'error', allowOutsideClick: false });
+                                    break;
+                            }
+                        })
+                        .catch(error => console.error(error));
+                }
+            });
+        } else {
+
+        }
+    }
+</script>
